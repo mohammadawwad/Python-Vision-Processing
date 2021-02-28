@@ -3,6 +3,7 @@ import numpy as np
 import cv2 
 from datetime import datetime
 
+face_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + "haarcascade_frontalface_alt2.xml")
 cap = cv2.VideoCapture(1)
 
 time = datetime.now()
@@ -72,11 +73,58 @@ make_480p()
 video_type_cv2 = get_vid_type(filename)
 out = cv2.VideoWriter(filename, video_type_cv2, fps, get_dims(cap, res), True)
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 while True:
     ret, frame = cap.read()
-    cv2.imshow("frame", frame)
+
+    gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+    faces = face_cascade.detectMultiScale(gray, scaleFactor = 1.5, minNeighbors = 5)
+    
+    for(x ,y, h, w) in faces:
+        print(x ,y, h, w)
+
+        roi_gray = gray[y:y+h, x:x+w]
+        roi_color = frame[y:y+h, x:x+w]
+        img_item = "images/mohammad.png"
+        cv2.imwrite(img_item, roi_gray)
+        
+        face_color = (255, 0, 0) #BGR
+        stroke = 2
+        end_cord_x = x + w
+        end_cord_y = y + h
+        cv2.rectangle(frame, (x , y), (end_cord_x, end_cord_y), face_color, stroke)
+
     out.write(frame)
     #Pressing Q qill quit the program
+    cv2.imshow("frame", frame)
     if cv2.waitKey(20) & 0xFF == ord('q'):
         break
 
