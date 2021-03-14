@@ -1,3 +1,5 @@
+#used to train opencv whether or not you are wearing a mask
+
 import os
 from PIL import Image
 import numpy as np
@@ -20,7 +22,7 @@ for root, dirs, files in os.walk(img_dir):
         if file.endswith("png") or file.endswith("jpg"):
             path = os.path.join(root, file)
             label = os.path.basename(root).replace(" ", "-").lower()
-            #print(label, path)
+            print(label, path)
 
             if not label in mask_id:
                 mask_id[label] = current_id
