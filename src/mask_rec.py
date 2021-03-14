@@ -18,13 +18,14 @@ cap = cv2.VideoCapture(1)
 time = datetime.now()
 formated_time = time.strftime("%Y-%M-%H-%M-%S")
 print("Current Time is: " + formated_time)
-file_type = input("would you like to save your video as a (.avi) or (.mp4)")
-
-#checking if the file type is correct
-while file_type.lower() != ".mp4" and file_type.lower() != ".avi":
-    print("Sorry the file type you entered is incorect")
-    file_type = input("would you like to save your video as a (.avi) or (.mp4)")
-
+file_type = input("would you like to save your video as a (.avi) , (.mp4) or (N)")
+if file_type.lower() != "n":
+    #checking if the file type is correct
+    while file_type.lower() != ".mp4" and file_type.lower() != ".avi":
+        print("Sorry the file type you entered is incorect")
+        file_type = input("would you like to save your video as a (.avi) or (.mp4)")
+else:
+    print("user does not want to take a recording")
 #setting file destination
 file_destination = 'code/videos/'
 filename = file_destination + formated_time + "-" + "video" + file_type
