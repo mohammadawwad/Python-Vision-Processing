@@ -83,34 +83,6 @@ video_type_cv2 = get_vid_type(filename)
 out = cv2.VideoWriter(filename, video_type_cv2, fps, get_dims(cap, res), True)
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 while True:
     ret, frame = cap.read()
 
