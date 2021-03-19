@@ -5,21 +5,17 @@ import _thread
 import numpy as np 
 from datetime import datetime
 
+#cascades
 face_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + "haarcascade_frontalface_alt2.xml")
+mouth_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + "haarcascade_smile.xml")
 eye_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + "haarcascade_eye.xml")
-# recognizer = cv2.face.LBPHFaceRecognizer_create()
-# recognizer.read("src/trainner/mask_trainner.yml")
 
 if eye_cascade.empty():
   raise IOError('Unable to load the eye cascade classifier xml file')
+if mouth_cascade.empty():
+  raise IOError('Unable to load the mouth cascade classifier xml file')
 if face_cascade.empty():
   raise IOError('Unable to load the face cascade classifier xml file')
-
-
-# labels = {"persons_name" : 1}
-# with open("labels.pickle", "rb") as f:
-#     og_labels = pickle.load(f)
-#     labels = {v:k for k,v in og_labels.items()}
 
 cap = cv2.VideoCapture(1)
 
@@ -95,9 +91,10 @@ video_type_cv2 = get_vid_type(filename)
 out = cv2.VideoWriter(filename, video_type_cv2, fps, get_dims(cap, res), True)
 
 #Global Variables
-name = ['Eye', 'Face', 'Mask-ON', 'Mask-OFF', 'Not Detected']
+name = ['Eye', 'Mouth', 'Face', 'Mask-ON', 'Mask-OFF', 'Not Detected']
 eye_detected = False
 face_detected = False
+mouth_detected = False
 box_color = (255, 0, 0) #Blue
 
 #Eye Function
@@ -121,9 +118,21 @@ def face_detector():
     face_detected = False
     return face_detected
 
+#Mouth Function
+def mouth_detector():
+    for(x ,y, h, w) in mouths:
+        stroke = 2
+        cv2.rectangle(frame, (x , y), ((x + h), (y + w)), (255,0,0), stroke)
+        mouth_detected = True
+        return mouth_detected
+    
+    mouth_detected = False
+    return mouth_detected
+
 def multi_threading():
     _thread.start_new_thread(eye_detector, ()) 
     _thread.start_new_thread(face_detector, ()) 
+    #_thread.start_new_thread(mouth_detector, ()) 
 
 #Live Video Capture Starts
 
@@ -131,16 +140,19 @@ while True:
     ret, frame = cap.read()
 
     gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+    mouths = mouth_cascade.detectMultiScale(gray, scaleFactor = 1.1, minNeighbors = 3)
     faces = face_cascade.detectMultiScale(gray, scaleFactor = 1.5, minNeighbors = 3)
-    eyes = eye_cascade.detectMultiScale(gray, scaleFactor = 1.5, minNeighbors = 2)
+    eyes = eye_cascade.detectMultiScale(gray, scaleFactor = 1.5, minNeighbors = 3)
 
     eye_val = eye_detector()
     face_val = face_detector()
+    mouth_val = face_detector()
 
     multi_threading()
 
     print(eye_val)
     print(face_val)
+    print(mouth_val)
 
     font = cv2.FONT_HERSHEY_SIMPLEX
     face_color = (255, 0, 0) #Blue
@@ -151,11 +163,11 @@ while True:
     if(face_val == True and eye_val == True):
         print('DISPLAYING FASLE')
         box_color = (0, 0, 255) #Red
-        cv2.putText(frame, name[3], text_pos, font, 1, color['Red'], stroke, cv2.LINE_AA)
+        cv2.putText(frame, name[4], text_pos, font, 1, color['Red'], stroke, cv2.LINE_AA)
     if(face_val == False and eye_val == True):
         print('DISPLAYING TRUE')
         box_color = (0, 255, 0) #Green
-        cv2.putText(frame, name[2], text_pos, font, 1, color['Green'], stroke, cv2.LINE_AA)
+        cv2.putText(frame, name[3], text_pos, font, 1, color['Green'], stroke, cv2.LINE_AA)
 
     out.write(frame)
     #Pressing Escape Key will quit the program
