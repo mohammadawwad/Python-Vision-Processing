@@ -98,30 +98,30 @@ out = cv2.VideoWriter(filename, video_type_cv2, fps, get_dims(cap, res), True)
 name = ['Eye', 'Face', 'Mask-ON', 'Mask-OFF', 'Not Detected']
 eye_detected = False
 face_detected = False
+box_color = (255, 0, 0) #Blue
 
 #Eye Function
 def eye_detector():
     for(x ,y, h, w) in eyes:
-        eye_color = (255, 0, 0) #Blue
-        cv2.rectangle(frame, (x , y), (x + w, y + h), eye_color, stroke)
+        stroke = 2
+        cv2.rectangle(frame, (x , y), (x + w, y + h), box_color, stroke)
         eye_detected = True
-        print("------Eye: " + str(eye_detected))
         return eye_detected
-        eye_detected = False
-    print(".......Eye: " + str(face_detected))
+    eye_detected = False
+    return eye_detected
 
 #Face Function
 def face_detector():
     for(x ,y, h, w) in faces:
-        face_color = (255, 0, 0) #Blue
-        cv2.rectangle(frame, (x , y), (x + w, y + h), face_color, stroke)
+        stroke = 2
+        cv2.rectangle(frame, (x , y), (x + w, y + h), box_color, stroke)
         face_detected = True
-        print("------Face: " + str(face_detected))
         return face_detected
+    
     face_detected = False
-    print(".......Face: " + str(face_detected))
+    return face_detected
 
-def multi_thread():
+def multi_threading():
     _thread.start_new_thread(eye_detector, ()) 
     _thread.start_new_thread(face_detector, ()) 
 
@@ -131,20 +131,31 @@ while True:
     ret, frame = cap.read()
 
     gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-    faces = face_cascade.detectMultiScale(gray, scaleFactor = 1.5, minNeighbors = 5)
-    eyes = eye_cascade.detectMultiScale(gray, scaleFactor = 1.5, minNeighbors = 5)
+    faces = face_cascade.detectMultiScale(gray, scaleFactor = 1.5, minNeighbors = 3)
+    eyes = eye_cascade.detectMultiScale(gray, scaleFactor = 1.5, minNeighbors = 2)
 
-    multi_thread()
+    eye_val = eye_detector()
+    face_val = face_detector()
+
+    multi_threading()
+
+    print(eye_val)
+    print(face_val)
+
     font = cv2.FONT_HERSHEY_SIMPLEX
     face_color = (255, 0, 0) #Blue
     color = {'Black' : (0, 0, 0), 'Red' : (0, 0, 255), 'Green' : (0, 255, 0), 'Blue' : (255, 0, 0)}        #Black
     stroke = 2
     text_pos = (50, 50)
-    # if(face_detected == True and eye_detected == True):
-    #     cv2.putText(frame, name[3], text_pos, font, 1, color['Green'], stroke, cv2.LINE_AA)
-    # if(face_detected == False and eye_detected == True):
-    #     cv2.putText(frame, name[2], text_pos, font, 1, color['Red'], stroke, cv2.LINE_AA)
 
+    if(face_val == True and eye_val == True):
+        print('DISPLAYING FASLE')
+        box_color = (0, 0, 255) #Red
+        cv2.putText(frame, name[3], text_pos, font, 1, color['Red'], stroke, cv2.LINE_AA)
+    if(face_val == False and eye_val == True):
+        print('DISPLAYING TRUE')
+        box_color = (0, 255, 0) #Green
+        cv2.putText(frame, name[2], text_pos, font, 1, color['Green'], stroke, cv2.LINE_AA)
 
     out.write(frame)
     #Pressing Escape Key will quit the program
