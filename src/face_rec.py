@@ -1,10 +1,22 @@
 import os
-import numpy as np 
 import cv2 
-from datetime import datetime
 import pickle
+import _thread 
+import numpy as np 
+from datetime import datetime
 
+#cascades
 face_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + "haarcascade_frontalface_alt2.xml")
+mouth_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + "haarcascade_smile.xml")
+eye_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + "haarcascade_eye.xml")
+
+if eye_cascade.empty():
+  raise IOError('Unable to load the eye cascade classifier xml file')
+if mouth_cascade.empty():
+  raise IOError('Unable to load the mouth cascade classifier xml file')
+if face_cascade.empty():
+  raise IOError('Unable to load the face cascade classifier xml file')
+
 recognizer = cv2.face.LBPHFaceRecognizer_create()
 recognizer.read("src/trainner/face_trainner.yml")
 
@@ -18,21 +30,29 @@ cap = cv2.VideoCapture(1)
 time = datetime.now()
 formated_time = time.strftime("%Y-%M-%H-%M-%S")
 print("Current Time is: " + formated_time)
-file_type = input("would you like to save your video as a (.avi) or (.mp4)")
+file_type = input("Would you like to save your video as a (.avi) , (.mp4) or (N)")
 
-#checking if the file type is correct
-while file_type != ".mp4" and file_type != ".avi":
-    print("Sorry the file type you entered is incorect")
-    file_type = input("would you like to save your video as a (.avi) or (.mp4)")
+if file_type.lower() != "n":
+    #checking if the file type is correct
+    while file_type.lower() != ".mp4" and file_type.lower() != ".avi":
+        print("Sorry the file type you entered is incorect")
+        file_type = input("Would you like to save your video as a (.avi) or (.mp4)")
 
-#setting file destination
+else:
+    print("User is not recording...")
+
+# #setting file destination
 file_destination = 'code/videos/'
 filename = file_destination + formated_time + "-" + "video" + file_type
 fps = 24.0
 res = "480"
-#use ffmpeg for audio recording
+# #use ffmpeg for audio recording
 
-#changes the video resolution depending on what u need
+
+
+
+
+# #changes the video resolution depending on what u need
 def make_1080p():
     cap.set(3, 1920)
     cap.set(4, 1080)
@@ -81,50 +101,115 @@ def get_vid_type(filename):
 make_480p()
 video_type_cv2 = get_vid_type(filename)
 out = cv2.VideoWriter(filename, video_type_cv2, fps, get_dims(cap, res), True)
+# changes the video resolution depending on what u need
 
 
+
+#Global Variables
+color = {'Black' : (0, 0, 0), 'Red' : (0, 0, 255), 'Green' : (0, 255, 0), 'Blue' : (255, 0, 0)} 
+name = ['Eye', 'Mouth', 'Face', 'Mask-ON', 'Mask-OFF', 'Not Detected']
+eye_detected = False
+face_detected = False
+mouth_detected = False
+box_color = (255, 0, 0) #Blue
+
+#Eye Function
+def eye_detector():
+    for(x ,y, h, w) in eyes:
+        stroke = 2
+        cv2.rectangle(frame, (x , y), (x + w, y + h), box_color, stroke)
+        eye_detected = True
+        return eye_detected
+    eye_detected = False
+    return eye_detected
+
+#Face Function
+def face_detector():
+    for(x ,y, h, w) in faces:
+        stroke = 2
+        roi_gray = gray[y:y+h, x:x+w]
+
+        id_, conf = recognizer.predict(roi_gray)
+        if conf >= 45:
+            person_recognized = True
+            rec_name = labels[id_]
+        
+        cv2.rectangle(frame, (x , y), (x + w, y + h), box_color, stroke)
+        face_detected = True
+        return face_detected, person_recognized, rec_name
+    
+    face_detected = False
+    person_recognized = False
+    rec_name = 'Not Indentified'
+    return face_detected, person_recognized, rec_name
+
+        
+#Mouth Function
+def mouth_detector():
+    for(x ,y, h, w) in mouths:
+        stroke = 2
+        cv2.rectangle(frame, (x , y), ((x + h), (y + w)), (255,0,0), stroke)
+        mouth_detected = True
+        return mouth_detected
+    
+    mouth_detected = False
+    return mouth_detected
+
+#Multi threading allows the program to run 
+#multiple things at once ex: for loops
+def multi_threading():
+    _thread.start_new_thread(eye_detector, ()) 
+    _thread.start_new_thread(face_detector, ()) 
+    #_thread.start_new_thread(mouth_detector, ()) 
+
+#Live Video Capture Starts
 while True:
     ret, frame = cap.read()
 
     gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-    faces = face_cascade.detectMultiScale(gray, scaleFactor = 1.5, minNeighbors = 5)
+    mouths = mouth_cascade.detectMultiScale(gray, scaleFactor = 1.1, minNeighbors = 3)
+    faces = face_cascade.detectMultiScale(gray, scaleFactor = 1.5, minNeighbors = 3)
+    eyes = eye_cascade.detectMultiScale(gray, scaleFactor = 1.5, minNeighbors = 3)
 
-    for(x ,y, h, w) in faces:
-        print(x ,y, h, w)
+    eye_val = eye_detector()
+    face_val = face_detector()
+    # mouth_val = mouth_detector()
 
-        roi_gray = gray[y:y+h, x:x+w]
-        roi_color = frame[y:y+h, x:x+w]
+    multi_threading()
 
-        id_, conf = recognizer.predict(roi_gray)
-        if conf >= 45:
-            print(id_)
-            print(labels[id_])
-            font = cv2.FONT_HERSHEY_SIMPLEX
-            name = labels[id_]
-            color = (0, 0, 0) #Black
-            stroke = 2
-            cv2.putText(frame, name, (x, y), font, 1, color, stroke, cv2.LINE_AA)
 
-        img_item = "images/recognized.png"
-        cv2.imwrite(img_item, roi_gray)
-        
-        #BGR
-        face_color = (255, 0, 0) #Blue
-        mask_true = (0, 255, 0)  #Green
-        mask_false = (0, 0, 255) #Red
+    print(eye_val)
+    print(face_val)
+    # print(mouth_val)
 
-        stroke = 2
-        end_cord_x = x + w
-        end_cord_y = y + h
-        cv2.rectangle(frame, (x , y), (end_cord_x, end_cord_y), face_color, stroke)
+    font = cv2.FONT_HERSHEY_SIMPLEX
+    face_color = (255, 0, 0) #Blue
+    stroke = 2
+    text_pos = (50, 50)
+    user_pos = (100, 100)
+
+    if(face_val == True and eye_val == True):
+        print('DISPLAYING FASLE')
+        box_color = (0, 0, 255) #Red
+        cv2.putText(frame, name[4], text_pos, font, 1, color['Red'], stroke, cv2.LINE_AA)
+    if(face_val == False and eye_val == True):
+        print('DISPLAYING TRUE')
+        box_color = (0, 255, 0) #Green
+        cv2.putText(frame, name[3], text_pos, font, 1, color['Green'], stroke, cv2.LINE_AA)
+
+    # #persons name
+    if():
+        cv2.putText(frame, rec_name, (100, 100), font, 1, color[0], stroke, cv2.LINE_AA)
 
     out.write(frame)
-    #Pressing Q qill quit the program
+    #Pressing Escape Key will quit the program
     cv2.imshow("frame", frame)
-    if cv2.waitKey(20) & 0xFF == ord('q'):
+    if cv2.waitKey(20) & 0xFF == 27:
+        print('User Exited...')
         break
 
 #stops capture
 cap.release()
 out.release()
 cv2.destroyAllWindows()
+
