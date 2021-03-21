@@ -110,6 +110,8 @@ color = {'Black' : (0, 0, 0), 'Red' : (0, 0, 255), 'Green' : (0, 255, 0), 'Blue'
 name = ['Eye', 'Mouth', 'Face', 'Mask-ON', 'Mask-OFF', 'Not Detected']
 eye_detected = False
 face_detected = False
+person_rec = False
+rec_name = 'Not Identified'
 mouth_detected = False
 box_color = (255, 0, 0) #Blue
 
@@ -124,24 +126,26 @@ def eye_detector():
     return eye_detected
 
 #Face Function
+#return_value allows us to choose what value we would like to use and return
+#return value is nt updating fix it next
 def face_detector():
     for(x ,y, h, w) in faces:
         stroke = 2
-        roi_gray = gray[y:y+h, x:x+w]
+        # roi_gray = gray[y:y+h, x:x+w]
 
-        id_, conf = recognizer.predict(roi_gray)
-        if conf >= 45:
-            person_recognized = True
-            rec_name = labels[id_]
+        # id_, conf = recognizer.predict(roi_gray)
+        # if conf >= 45:
+        #     person_rec = True
+        #     rec_name = labels[id_]
         
         cv2.rectangle(frame, (x , y), (x + w, y + h), box_color, stroke)
         face_detected = True
-        return face_detected, person_recognized, rec_name
+        return face_detected
     
     face_detected = False
-    person_recognized = False
-    rec_name = 'Not Indentified'
-    return face_detected, person_recognized, rec_name
+    # person_rec = False
+    # rec_name = 'Not Indentified'
+    return face_detected
 
         
 #Mouth Function
@@ -173,6 +177,8 @@ while True:
 
     eye_val = eye_detector()
     face_val = face_detector()
+    # person_val = face_detector(person_rec)
+    # name_val = face_detector(rec_name)
     # mouth_val = mouth_detector()
 
     multi_threading()
@@ -198,8 +204,9 @@ while True:
         cv2.putText(frame, name[3], text_pos, font, 1, color['Green'], stroke, cv2.LINE_AA)
 
     # #persons name
-    if():
-        cv2.putText(frame, rec_name, (100, 100), font, 1, color[0], stroke, cv2.LINE_AA)
+    # if(person_val == True):
+    #     print('----------------')
+    #     cv2.putText(frame, name_val, (100, 100), font, 1, color[0], stroke, cv2.LINE_AA)
 
     out.write(frame)
     #Pressing Escape Key will quit the program
