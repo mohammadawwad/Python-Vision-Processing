@@ -128,31 +128,36 @@ def eye_detector():
 #Face Function
 #return_value allows us to choose what value we would like to use and return
 #return value is nt updating fix it next
-def face_detector():
+def face_detector(returning = 'face_detected'):
     for(x ,y, h, w) in faces:
         stroke = 2
-        # roi_gray = gray[y:y+h, x:x+w]
+        roi_gray = gray[y:y+h, x:x+w]
 
-        # id_, conf = recognizer.predict(roi_gray)
-        # if conf >= 45:
-        #     person_rec = True
-        #     rec_name = labels[id_]
+        id_, conf = recognizer.predict(roi_gray)
+        
+        person_rec = True
+        rec_name = labels[id_]
         
         cv2.rectangle(frame, (x , y), (x + w, y + h), box_color, stroke)
         face_detected = True
-        return face_detected
+        print('---------RETURNING: ' + str(returning))
+        return eval(returning)
     
     face_detected = False
-    # person_rec = False
-    # rec_name = 'Not Indentified'
-    return face_detected
+    person_rec = False
+    rec_name = 'Not Indentified'
+    print('---------RETURNING: ' + str(returning))
+    return eval(returning)
 
         
 #Mouth Function
 def mouth_detector():
     for(x ,y, h, w) in mouths:
         stroke = 2
-        cv2.rectangle(frame, (x , y), ((x + h), (y + w)), (255,0,0), stroke)
+        roi_gray = gray[y:y+h, x:x+w]
+        id_, conf = recognizer.predict(roi_gray)
+        if conf > 120:
+            cv2.rectangle(frame, (x , y), ((x + h), (y + w)), (255,0,0), stroke)
         mouth_detected = True
         return mouth_detected
     
@@ -176,37 +181,39 @@ while True:
     eyes = eye_cascade.detectMultiScale(gray, scaleFactor = 1.5, minNeighbors = 3)
 
     eye_val = eye_detector()
-    face_val = face_detector()
-    # person_val = face_detector(person_rec)
-    # name_val = face_detector(rec_name)
+    face_val = face_detector('face_detected')
+    person_val = face_detector('person_rec')
+    name_val = face_detector('rec_name')
     # mouth_val = mouth_detector()
 
     multi_threading()
 
 
-    print(eye_val)
-    print(face_val)
+    print('EYE: ' + str(eye_val))
+    print('Face: ' + str(face_val))
+    print('Person: ' + str(person_val))
+    print('Name: ' + str(name_val))
     # print(mouth_val)
 
     font = cv2.FONT_HERSHEY_SIMPLEX
     face_color = (255, 0, 0) #Blue
     stroke = 2
     text_pos = (50, 50)
-    user_pos = (100, 100)
+    user_pos = (450, 50)
 
     if(face_val == True and eye_val == True):
-        print('DISPLAYING FASLE')
+        print('MASK-OFF')
         box_color = (0, 0, 255) #Red
         cv2.putText(frame, name[4], text_pos, font, 1, color['Red'], stroke, cv2.LINE_AA)
     if(face_val == False and eye_val == True):
-        print('DISPLAYING TRUE')
+        print('MASK-ON')
         box_color = (0, 255, 0) #Green
         cv2.putText(frame, name[3], text_pos, font, 1, color['Green'], stroke, cv2.LINE_AA)
 
     # #persons name
-    # if(person_val == True):
-    #     print('----------------')
-    #     cv2.putText(frame, name_val, (100, 100), font, 1, color[0], stroke, cv2.LINE_AA)
+    if(person_val == True):
+        print('----------------')
+        cv2.putText(frame, name_val, user_pos, font, 1, color['Black'], stroke, cv2.LINE_AA)
 
     out.write(frame)
     #Pressing Escape Key will quit the program
