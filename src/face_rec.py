@@ -2,6 +2,7 @@ import os
 import cv2 
 import pickle
 import _thread 
+import time
 import numpy as np 
 from datetime import datetime
 
@@ -27,8 +28,8 @@ with open("labels.pickle", "rb") as f:
 
 cap = cv2.VideoCapture(1)
 
-time = datetime.now()
-formated_time = time.strftime("%Y-%M-%H-%M-%S")
+time_date = datetime.now()
+formated_time = time_date.strftime("%Y-%M-%H-%M-%S")
 print("Current Time is: " + formated_time)
 file_type = input("Would you like to save your video as a (.avi) , (.mp4) or (N)")
 
@@ -122,12 +123,11 @@ def eye_detector():
         cv2.rectangle(frame, (x , y), (x + w, y + h), box_color, stroke)
         eye_detected = True
         return eye_detected
+
     eye_detected = False
     return eye_detected
 
 #Face Function
-#return_value allows us to choose what value we would like to use and return
-#return value is nt updating fix it next
 def face_detector(returning = 'face_detected'):
     for(x ,y, h, w) in faces:
         stroke = 2
@@ -140,13 +140,13 @@ def face_detector(returning = 'face_detected'):
         
         cv2.rectangle(frame, (x , y), (x + w, y + h), box_color, stroke)
         face_detected = True
-        print('---------RETURNING: ' + str(returning))
+        #print('---------RETURNING: ' + str(returning))
         return eval(returning)
     
     face_detected = False
     person_rec = False
     rec_name = 'Not Indentified'
-    print('---------RETURNING: ' + str(returning))
+    #print('---------RETURNING: ' + str(returning))
     return eval(returning)
 
         
@@ -189,11 +189,11 @@ while True:
     multi_threading()
 
 
-    print('EYE: ' + str(eye_val))
-    print('Face: ' + str(face_val))
-    print('Person: ' + str(person_val))
-    print('Name: ' + str(name_val))
-    # print(mouth_val)
+    # print('EYE: ' + str(eye_val))
+    # print('Face: ' + str(face_val))
+    # print('Person: ' + str(person_val))
+    # print('Name: ' + str(name_val))
+    # print(mouth_val) wasnt used orginaly
 
     font = cv2.FONT_HERSHEY_SIMPLEX
     face_color = (255, 0, 0) #Blue
@@ -202,17 +202,17 @@ while True:
     user_pos = (450, 50)
 
     if(face_val == True and eye_val == True):
-        print('MASK-OFF')
+        #print('MASK-OFF')
         box_color = (0, 0, 255) #Red
         cv2.putText(frame, name[4], text_pos, font, 1, color['Red'], stroke, cv2.LINE_AA)
     if(face_val == False and eye_val == True):
-        print('MASK-ON')
+        #print('MASK-ON')
         box_color = (0, 255, 0) #Green
         cv2.putText(frame, name[3], text_pos, font, 1, color['Green'], stroke, cv2.LINE_AA)
 
     # #persons name
     if(person_val == True):
-        print('----------------')
+        #print('----------------')
         cv2.putText(frame, name_val, user_pos, font, 1, color['Black'], stroke, cv2.LINE_AA)
 
     out.write(frame)
@@ -221,6 +221,8 @@ while True:
     if cv2.waitKey(20) & 0xFF == 27:
         print('User Exited...')
         break
+
+    #time.sleep(0.01)
 
 #stops capture
 cap.release()
