@@ -10,6 +10,7 @@ img_dir = os.path.join(base_dir, "images")
 face_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + "haarcascade_frontalface_alt2.xml")
 recognizer = cv2.face.LBPHFaceRecognizer_create()
 
+#gloabal variable, lists, and set
 current_id = 0
 label_id = {}
 y_labels = []
@@ -50,5 +51,6 @@ for root, dirs, files in os.walk(img_dir):
 with open("labels.pickle", "wb") as f:
     pickle.dump(label_id, f)
 
+#saves the trained data to the yml file
 recognizer.train(x_train, np.array(y_labels))
 recognizer.save("src/trainner/face_trainner.yml")

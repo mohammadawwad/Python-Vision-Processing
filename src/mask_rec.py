@@ -129,6 +129,7 @@ def mouth_detector():
     mouth_detected = False
     return mouth_detected
 
+#starts a secondary thread for detecting the eye and face at the same time
 def multi_threading():
     _thread.start_new_thread(eye_detector, ()) 
     _thread.start_new_thread(face_detector, ()) 
@@ -139,37 +140,47 @@ def multi_threading():
 while True:
     ret, frame = cap.read()
 
+    #creating a gray scale and setting the cascade variables
     gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
     mouths = mouth_cascade.detectMultiScale(gray, scaleFactor = 1.1, minNeighbors = 3)
     faces = face_cascade.detectMultiScale(gray, scaleFactor = 1.5, minNeighbors = 3)
     eyes = eye_cascade.detectMultiScale(gray, scaleFactor = 1.5, minNeighbors = 3)
 
+    #setting variables to the functions specific return
     eye_val = eye_detector()
     face_val = face_detector()
     mouth_val = face_detector()
 
+    #starts the multithreaded processes
     multi_threading()
 
+    #outputing values to the console
     print(eye_val)
     print(face_val)
     print(mouth_val)
 
+    #settings for the frame such as box color and text font/position relative to the frame
     font = cv2.FONT_HERSHEY_SIMPLEX
     face_color = (255, 0, 0) #Blue
-    color = {'Black' : (0, 0, 0), 'Red' : (0, 0, 255), 'Green' : (0, 255, 0), 'Blue' : (255, 0, 0)}        #Black
+    color = {'Black' : (0, 0, 0), 'Red' : (0, 0, 255), 'Green' : (0, 255, 0), 'Blue' : (255, 0, 0)} 
     stroke = 2
     text_pos = (50, 50)
 
+    #mask not recognised soa red box is displayed
     if(face_val == True and eye_val == True):
         print('DISPLAYING FASLE')
         box_color = (0, 0, 255) #Red
         cv2.putText(frame, name[4], text_pos, font, 1, color['Red'], stroke, cv2.LINE_AA)
+
+    #mask recognised so a green box will be displayed
     if(face_val == False and eye_val == True):
         print('DISPLAYING TRUE')
         box_color = (0, 255, 0) #Green
         cv2.putText(frame, name[3], text_pos, font, 1, color['Green'], stroke, cv2.LINE_AA)
 
+    #starts the frame of the given camera
     out.write(frame)
+
     #Pressing Escape Key will quit the program
     cv2.imshow("frame", frame)
     if cv2.waitKey(20) & 0xFF == 27:

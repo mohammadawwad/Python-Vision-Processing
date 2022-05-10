@@ -11,6 +11,7 @@ face_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + "haarcascade_fronta
 mouth_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + "haarcascade_smile.xml")
 eye_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + "haarcascade_eye.xml")
 
+#creates error if the cascade is unavailable
 if eye_cascade.empty():
   raise IOError('Unable to load the eye cascade classifier xml file')
 if mouth_cascade.empty():
@@ -18,6 +19,7 @@ if mouth_cascade.empty():
 if face_cascade.empty():
   raise IOError('Unable to load the face cascade classifier xml file')
 
+#reads information from the trained data
 recognizer = cv2.face.LBPHFaceRecognizer_create()
 recognizer.read("src/trainner/face_trainner.yml")
 
@@ -26,8 +28,11 @@ with open("labels.pickle", "rb") as f:
     og_labels = pickle.load(f)
     labels = {v:k for k,v in og_labels.items()}
 
+#starts the capture on you usb camera
+#if your using a laptop camera set it to 0
 cap = cv2.VideoCapture(1)
 
+#gets the current date to attach to the latest save file
 time_date = datetime.now()
 formated_time = time_date.strftime("%Y-%M-%H-%M-%S")
 print("Current Time is: " + formated_time)
@@ -47,13 +52,13 @@ file_destination = 'code/videos/'
 filename = file_destination + formated_time + "-" + "video" + file_type
 fps = 24.0
 res = "480"
-# #use ffmpeg for audio recording
+#use ffmpeg for audio recording
 
 
 
 
 
-# #changes the video resolution depending on what u need
+#changes the video resolution depending on what u need
 def make_1080p():
     cap.set(3, 1920)
     cap.set(4, 1080)
@@ -70,7 +75,7 @@ def custom_res(cap, width , height):
     cap.set(3, width)
     cap.set(4, height)
 
-
+#set of usefull resolutions
 std_dims =  {
     "480p": (640, 480),
     "720p": (1280, 720),
@@ -78,6 +83,7 @@ std_dims =  {
     "4k": (3840, 2160),
 }
 
+#method to get the fimentions
 def get_dims(cap, res='1080p'):
     width, height = std_dims["480p"]
     if res in std_dims:
@@ -87,6 +93,8 @@ def get_dims(cap, res='1080p'):
     custom_res(cap, width, height)
     return width, height
 
+
+#posible file types that the video could be saved in
 video_type = {
     'avi' : cv2.VideoWriter_fourcc(*'XVID'),
     'mp4' : cv2.VideoWriter_fourcc(*'XVID'),
@@ -165,7 +173,7 @@ def mouth_detector():
     return mouth_detected
 
 #Multi threading allows the program to run 
-#multiple things at once ex: for loops
+#multiple things at once ex: 2 for loops at the same time
 def multi_threading():
     _thread.start_new_thread(eye_detector, ()) 
     _thread.start_new_thread(face_detector, ()) 
@@ -175,11 +183,13 @@ def multi_threading():
 while True:
     ret, frame = cap.read()
 
+    #sets the gray scale and cascade variables
     gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
     mouths = mouth_cascade.detectMultiScale(gray, scaleFactor = 1.1, minNeighbors = 3)
     faces = face_cascade.detectMultiScale(gray, scaleFactor = 1.5, minNeighbors = 3)
     eyes = eye_cascade.detectMultiScale(gray, scaleFactor = 1.5, minNeighbors = 3)
 
+    #sets the return of each function into a variable
     eye_val = eye_detector()
     face_val = face_detector('face_detected')
     person_val = face_detector('person_rec')
@@ -188,7 +198,7 @@ while True:
 
     multi_threading()
 
-
+    #outputs for debuging
     # print('EYE: ' + str(eye_val))
     # print('Face: ' + str(face_val))
     # print('Person: ' + str(person_val))
@@ -210,12 +220,13 @@ while True:
         box_color = (0, 255, 0) #Green
         cv2.putText(frame, name[3], text_pos, font, 1, color['Green'], stroke, cv2.LINE_AA)
 
-    # #persons name
+    #shows the recognised persons name on the frame
     if(person_val == True):
         #print('----------------')
         cv2.putText(frame, name_val, user_pos, font, 1, color['Black'], stroke, cv2.LINE_AA)
 
     out.write(frame)
+
     #Pressing Escape Key will quit the program
     cv2.imshow("frame", frame)
     if cv2.waitKey(20) & 0xFF == 27:
@@ -224,7 +235,7 @@ while True:
 
     #time.sleep(0.01)
 
-#stops capture
+#stops the capture
 cap.release()
 out.release()
 cv2.destroyAllWindows()
