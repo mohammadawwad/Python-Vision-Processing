@@ -12,3 +12,17 @@ Please note that the photos have been removed for privacy concerns and that the 
   7. __ENJOY__
 
 
+Want to test it out 
+
+1) try uploading more images
+    person 1: Ryan Reynolds
+    person 2: The Rock
+    person 3: kevin Heart
+
+2) use the file renamer
+
+3) train using the facial recognition program
+
+4) Finally run the facial recognition python file
+
+
