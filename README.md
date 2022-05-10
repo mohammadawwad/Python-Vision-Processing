@@ -10,3 +10,7 @@ Please note that the photos have been removed for privacy concerns and that the 
   5. Type the following command to run the code in your terminal ```python face_rec.py```
   6. To try the mask detector application go to the file called __mask_rec__ and press __run__ or type ```python mask_rec``` in the terminal
   7. __ENJOY__
+
+
+
+Remove photos then make repo public
