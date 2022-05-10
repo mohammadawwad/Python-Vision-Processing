@@ -10,6 +10,7 @@ face_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + "haarcascade_fronta
 mouth_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + "haarcascade_smile.xml")
 eye_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + "haarcascade_eye.xml")
 
+#creates error if cascaded didnt load propperly 
 if eye_cascade.empty():
   raise IOError('Unable to load the eye cascade classifier xml file')
 if mouth_cascade.empty():
@@ -17,8 +18,11 @@ if mouth_cascade.empty():
 if face_cascade.empty():
   raise IOError('Unable to load the face cascade classifier xml file')
 
+#creates the capture on port 1 which would be a usb camera
+#use 0 if you are using a laptop camera that is built in
 cap = cv2.VideoCapture(1)
 
+#gets the current date and prompts you if you would like to save a video clip of the capture
 time = datetime.now()
 formated_time = time.strftime("%Y-%M-%H-%M-%S")
 print("Current Time is: " + formated_time)
@@ -57,7 +61,7 @@ def custom_res(cap, width , height):
     cap.set(3, width)
     cap.set(4, height)
 
-
+#set of usefull resolutions
 std_dims =  {
     "480p": (640, 480),
     "720p": (1280, 720),
@@ -65,6 +69,7 @@ std_dims =  {
     "4k": (3840, 2160),
 }
 
+#gets the dimentions
 def get_dims(cap, res='1080p'):
     width, height = std_dims["480p"]
     if res in std_dims:
@@ -74,6 +79,7 @@ def get_dims(cap, res='1080p'):
     custom_res(cap, width, height)
     return width, height
 
+#possible video file types that could be used
 video_type = {
     'avi' : cv2.VideoWriter_fourcc(*'XVID'),
     'mp4' : cv2.VideoWriter_fourcc(*'XVID'),
@@ -135,8 +141,8 @@ def multi_threading():
     _thread.start_new_thread(face_detector, ()) 
     #_thread.start_new_thread(mouth_detector, ()) 
 
-#Live Video Capture Starts
 
+#Live Video Capture Starts
 while True:
     ret, frame = cap.read()
 
