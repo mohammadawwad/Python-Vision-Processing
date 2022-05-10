@@ -12,5 +12,3 @@ Please note that the photos have been removed for privacy concerns and that the 
   7. __ENJOY__
 
 
-
-Remove photos then make repo public
