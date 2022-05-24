@@ -19,7 +19,7 @@ Want to test it out
     person 2: The Rock
     person 3: kevin Heart
 
-2) use the file renamer
+2) use the file renamer program to insure that all pictures have been labeled in sequential order woth the same name
 
 3) train using the facial recognition program
 
